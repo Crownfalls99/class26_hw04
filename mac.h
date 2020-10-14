@@ -25,6 +25,6 @@ struct Mac final {
 	//
 	bool operator == (const Mac& r) const { return memcmp(mac_, r.mac_, SIZE) == 0; }
 
-public:
+protected:
 	uint8_t mac_[SIZE];
 };

